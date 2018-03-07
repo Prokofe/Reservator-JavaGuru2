@@ -1,6 +1,6 @@
 package lv.javaguru.java2.view;
 
-public interface view {
+public interface View {
 
     void execute();
 }
