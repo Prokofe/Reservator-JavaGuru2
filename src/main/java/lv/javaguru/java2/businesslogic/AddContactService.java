@@ -13,22 +13,10 @@ public class AddContactService {
         this.contactDatabase = contactDatabase;
     }
 
-    public AddContactResponse addContact(String name, String phoneNumber) {
-        List<Error> validationErrors = addContactValidator.validate(name, phoneNumber);
-        if (!validationErrors.isEmpty()) {
-            return new AddContactResponse(false, validationErrors);
+    public void addContact(String name, String phoneNumber) {
+       Contact contact = new Contact();
+       contact.setName(name);
+       contact.setPhoneNumber(phoneNumber);
+       contactDatabase.add(contact);
         }
-
-        Contact contact = new Contact();
-        contact.setName(name);
-        contact.setPhoneNumber(phoneNumber);
-        contactDatabase.add(contact);
-
-        return new AddContactResponse(true, null);
-
-
-
-
-
-    }
 }
