@@ -3,8 +3,6 @@ package lv.javaguru.java2.businesslogic;
 import lv.javaguru.java2.Contact;
 import lv.javaguru.java2.database.ContactDatabase;
 
-import java.util.List;
-
 public class AddContactService {
 
     private ContactDatabase contactDatabase;
