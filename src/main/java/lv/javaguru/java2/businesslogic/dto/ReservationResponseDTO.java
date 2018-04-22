@@ -8,11 +8,13 @@ import java.util.List;
 public class ReservationResponseDTO {
 
     private List<Error> errors;
+    private int reservationId;
     private int tableId;
     private LocalDateTime reservationTime;
 
-    public ReservationResponseDTO(List<Error> errors, int tableId, LocalDateTime reservationTime) {
+    public ReservationResponseDTO(List<Error> errors, int reservationId, int tableId, LocalDateTime reservationTime) {
         this.errors = errors;
+        this.reservationId = reservationId;
         this.tableId = tableId;
         this.reservationTime = reservationTime;
     }
@@ -26,6 +28,14 @@ public class ReservationResponseDTO {
 
     public void setErrors(List<Error> errors) {
         this.errors = errors;
+    }
+
+    public int getReservationId() {
+        return reservationId;
+    }
+
+    public void setReservationId(int reservationId) {
+        this.reservationId = reservationId;
     }
 
     public int getTableId() {
@@ -43,6 +53,4 @@ public class ReservationResponseDTO {
     public void setReservationTime(LocalDateTime reservationTime) {
         this.reservationTime = reservationTime;
     }
-
-
 }

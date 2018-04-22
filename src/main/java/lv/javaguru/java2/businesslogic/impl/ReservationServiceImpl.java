@@ -9,20 +9,21 @@ import lv.javaguru.java2.database.ReservationDAO;
 import lv.javaguru.java2.database.TableDAO;
 import lv.javaguru.java2.domain.Customer;
 import lv.javaguru.java2.domain.Reservation;
-import lv.javaguru.java2.domain.ReservationTime;
 import lv.javaguru.java2.domain.Table;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+@Service
 public class ReservationServiceImpl implements ReservationService {
 
     private CustomerDAO customerDAO;
     private TableDAO tableDAO;
     private ReservationDAO reservationDAO;
 
+    @Autowired
     public ReservationServiceImpl(CustomerDAO customerDAO, TableDAO tableDAO, ReservationDAO reservationDAO) {
         this.customerDAO = customerDAO;
         this.tableDAO = tableDAO;
@@ -32,98 +33,86 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public ReservationResponseDTO makeReservation(ReservationRequestDTO reservationRequestDTO) {
 
-        ReservationResponseDTO responseDTO = new ReservationResponseDTO(new ArrayList<>(), 0, null);
+        ReservationResponseDTO responseDTO = new ReservationResponseDTO(new ArrayList<>(), 0, 0, null);
 
-        String phoneNumber = reservationRequestDTO.getPhoneNumber();
-        Customer customer = customerDAO.findByPhoneNumber(phoneNumber);
-        if (customer != null && customer.getStatus().equals(Customer.Status.BANNED)) {
-            Error error = new Error("customer", "banned customer");
-            responseDTO.getErrors().add(error);
+        Table table = findFreeTable(reservationRequestDTO.getPersonCount(), reservationRequestDTO.getStartTime());
+        if (table == null) {
+            responseDTO.getErrors().add(new Error("", "There is no free tables are found"));
             return responseDTO;
         }
 
-        LocalDateTime reservationTime = reservationRequestDTO.getDateTime();
-        int personCount = reservationRequestDTO.getPersonCount();
-        Set<Table> freeTables = findFreeTables(reservationTime, personCount);
-        if (freeTables.isEmpty()) {
-            Error error = new Error("table", "no free tables");
-            responseDTO.getErrors().add(error);
-            return responseDTO;
-        }
-        Table table = new Table();
-        for (Table freeTable : freeTables) {
-            table = freeTable; //TODO return table with optimal person count
-        }
-//        Table table = freeTables.stream().findAny().orElse(null);
+        Customer customer = findCustomer(reservationRequestDTO.getPhoneNumber());
         if (customer == null) {
-            customer = new Customer(
-                    0,
-                    reservationRequestDTO.getPhoneNumber(),
-                    reservationRequestDTO.getName(),
-                    Customer.Status.REGULAR);
+            customer = createCustomer(reservationRequestDTO.getPhoneNumber(), reservationRequestDTO.getName());
         }
-        Customer storedCustomer = customerDAO.save(customer);
-        table.getReservationTimes().add(new ReservationTime(0, table.getId(), reservationTime, reservationTime.plusHours(3L)));
-        Table storedTable = tableDAO.save(table);
-        Reservation reservation = new Reservation(0, storedCustomer.getId(), storedTable.getId(), reservationTime);
+
+        LocalDateTime endTime = reservationRequestDTO.getEndTime() == null ?
+                reservationRequestDTO.getStartTime().plusHours(2L).plusMinutes(55L) :
+                reservationRequestDTO.getEndTime();
+
+        Reservation reservation = buildReservation(
+                customer.getId(),
+                table.getId(),
+                reservationRequestDTO.getStartTime(),
+                endTime);
+
         Reservation storedReservation = reservationDAO.save(reservation);
-        responseDTO.setReservationTime(reservationTime);
-        responseDTO.setTableId(table.getId());
+        if (storedReservation == null) {
+            responseDTO.getErrors().add(new Error("", "Reservation can't be created"));
+            return responseDTO;
+        }
+
         return responseDTO;
     }
 
-    private Set<Table> findFreeTables(LocalDateTime reservationTime, int personCount) {
+    private Customer createCustomer(String phoneNumber, String name) {
+        return customerDAO.save(new Customer(0, phoneNumber, name, Customer.Status.REGULAR));
+    }
 
+    private Customer findCustomer(String phoneNumber) {
+        return customerDAO.findByPhoneNumber(phoneNumber);
+    }
+
+    private Table findFreeTable(int personCount, LocalDateTime startTime) {
+        Set<Reservation> reservations = reservationDAO.findByDate(startTime);
         Set<Table> tables = tableDAO.findAll();
-        Set<Table> freeTables = filterFreeTablesByPersonCount(tables, personCount);
-        freeTables = filterFreeTablesByAvailability(freeTables);
-        freeTables = filterFreeTablesByReservationTime(freeTables, reservationTime);
-        return freeTables;
-    }
-
-    private Set<Table> filterFreeTablesByReservationTime(Set<Table> tables, LocalDateTime reservationTime) {
-
-        Set<Table> freeTables = new HashSet<>();
-        for (Table table : tables) {
-            if (hasFreeTime(table.getReservationTimes(), reservationTime)) {
-                freeTables.add(table);
+        if (reservations.isEmpty()) {
+            return tables.stream().findFirst().orElse(null);
+        }
+        Set<Reservation> filteredReservations = filterReservationsByTime(reservations, startTime);
+        List<Table> freeTables = new LinkedList<>();
+        for (Reservation filteredReservation : filteredReservations) {
+            for (Table table : tables) {
+                if (filteredReservation.getTableId() != table.getId()) {
+                    freeTables.add(table);
+                }
             }
         }
-        return freeTables;
-    }
+        if (freeTables.isEmpty()) {
+            return null;
+        }
 
-    private boolean hasFreeTime(Set<ReservationTime> reservationTimes, LocalDateTime reservationTime) {
-
-        for (ReservationTime time : reservationTimes) {
-            if (reservationTime.isBefore(time.getEndTime()) && reservationTime.isAfter(time.getStartTime())) {
-                return false;
+        for (Table freeTable : freeTables) {
+            if (freeTable.getPersonCount() >= personCount) {
+                return freeTable;
             }
         }
-        return true;
+        return null;
     }
 
-    private Set<Table> filterFreeTablesByAvailability(Set<Table> tables) {
-
-        Set<Table> freeTables = new HashSet<>();
-        for (Table table : tables) {
-            if (table.isAvalaible()) {
-                freeTables.add(table);
+    private Set<Reservation> filterReservationsByTime(Set<Reservation> reservations, LocalDateTime startTime) {
+        Set<Reservation> filteredReservation = new HashSet<>();
+        for (Reservation reservation : reservations) {
+            if (startTime.isBefore(reservation.getEndTime()) && startTime.isAfter(reservation.getStartTime())) {
+                filteredReservation.add(reservation);
             }
         }
-        return freeTables;
+        return filteredReservation;
     }
 
-    private Set<Table> filterFreeTablesByPersonCount(Set<Table> tables, int personCount) {
-
-        Set<Table> freeTables = new HashSet<>();
-        for (Table table : tables) {
-            if (personCount <= table.getPersonCount()) {
-                freeTables.add(table);
-            }
-        }
-        return freeTables;
+    private Reservation buildReservation(int customerId, int tableId, LocalDateTime startTime, LocalDateTime endTime) {
+        return new Reservation(0, customerId, tableId, startTime, endTime);
     }
-
 
 }
 

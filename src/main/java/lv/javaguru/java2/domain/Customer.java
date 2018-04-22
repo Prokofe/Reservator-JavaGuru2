@@ -1,9 +1,19 @@
 package lv.javaguru.java2.domain;
 
+import javax.persistence.*;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "customers")
 public class Customer {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
+    @Column(nullable = false, unique = true)
     private String phoneNumber;
+
     private String name;
     private Status status;
 
@@ -79,8 +89,8 @@ public class Customer {
     }
 
     public enum Status {
-        VIP,
+        REGULAR,
         BANNED,
-        REGULAR
+        VIP
     }
 }

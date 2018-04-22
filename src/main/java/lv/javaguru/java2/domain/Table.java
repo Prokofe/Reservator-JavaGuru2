@@ -1,23 +1,24 @@
 package lv.javaguru.java2.domain;
 
-import java.util.Set;
+import javax.persistence.*;
 
+@Entity
+@javax.persistence.Table(name = "tables")
 public class Table {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
+    @Column(nullable = false)
     private int personCount;
-    private boolean avalaible;
-    private Set<ReservationTime> reservationTimes;
-
-    public Table(int id, int personCount, boolean avalaible, Set<ReservationTime> reservationTimes) {
-        this.id = id;
-        this.personCount = personCount;
-        this.avalaible = avalaible;
-        this.reservationTimes = reservationTimes;
-    }
-
 
     public Table() {
+    }
+
+    public Table(int id, int personCount) {
+        this.id = id;
+        this.personCount = personCount;
     }
 
     public int getId() {
@@ -36,22 +37,6 @@ public class Table {
         this.personCount = personCount;
     }
 
-    public boolean isAvalaible() {
-        return avalaible;
-    }
-
-    public void setAvalaible(boolean avalaible) {
-        this.avalaible = avalaible;
-    }
-
-    public Set<ReservationTime> getReservationTimes() {
-        return reservationTimes;
-    }
-
-    public void setReservationTimes(Set<ReservationTime> reservationTimes) {
-        this.reservationTimes = reservationTimes;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -59,16 +44,14 @@ public class Table {
 
         Table table = (Table) o;
 
-        if (personCount != table.personCount) return false;
-        if (avalaible != table.avalaible) return false;
-        return reservationTimes.equals(table.reservationTimes);
+        if (id != table.id) return false;
+        return personCount == table.personCount;
     }
 
     @Override
     public int hashCode() {
-        int result = personCount;
-        result = 31 * result + (avalaible ? 1 : 0);
-        result = 31 * result + reservationTimes.hashCode();
+        int result = id;
+        result = 31 * result + personCount;
         return result;
     }
 
@@ -77,8 +60,6 @@ public class Table {
         return "Table{" +
                 "id=" + id +
                 ", personCount=" + personCount +
-                ", avalaible=" + avalaible +
-                ", reservationTimes=" + reservationTimes +
                 '}';
     }
 }

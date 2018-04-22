@@ -6,13 +6,15 @@ public class ReservationRequestDTO {
 
     private String phoneNumber;
     private String name;
-    private LocalDateTime dateTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private int personCount;
 
-    public ReservationRequestDTO(String phoneNumber, String name, LocalDateTime dateTime, int personCount) {
+    public ReservationRequestDTO(String phoneNumber, String name, LocalDateTime startTime, LocalDateTime endTime, int personCount) {
         this.phoneNumber = phoneNumber;
         this.name = name;
-        this.dateTime = dateTime;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.personCount = personCount;
     }
 
@@ -32,12 +34,20 @@ public class ReservationRequestDTO {
         this.name = name;
     }
 
-    public LocalDateTime getDateTime() {
-        return dateTime;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public int getPersonCount() {

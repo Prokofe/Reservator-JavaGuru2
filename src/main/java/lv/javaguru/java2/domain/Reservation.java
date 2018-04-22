@@ -1,18 +1,35 @@
 package lv.javaguru.java2.domain;
 
+import javax.persistence.*;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "reservations")
 public class Reservation {
-    private int id;
-    private int customerId;
-    private int tableId;
-    private LocalDateTime reservationTime;
 
-    public Reservation(int id, int customerId, int tableId, LocalDateTime reservationTime) {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    @Column(nullable = false)
+    private int customerId;
+
+    @Column(nullable = false)
+    private int tableId;
+
+    @Column(nullable = false)
+    private LocalDateTime startTime;
+
+    @Column(nullable = false)
+    private LocalDateTime endTime;
+
+    public Reservation(int id, int customerId, int tableId, LocalDateTime startTime, LocalDateTime endTime) {
         this.id = id;
         this.customerId = customerId;
         this.tableId = tableId;
-        this.reservationTime = reservationTime;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
     public Reservation() {
@@ -42,12 +59,20 @@ public class Reservation {
         this.tableId = tableId;
     }
 
-    public LocalDateTime getReservationTime() {
-        return reservationTime;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setReservationTime(LocalDateTime reservationTime) {
-        this.reservationTime = reservationTime;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     @Override
@@ -57,16 +82,20 @@ public class Reservation {
 
         Reservation that = (Reservation) o;
 
+        if (id != that.id) return false;
         if (customerId != that.customerId) return false;
         if (tableId != that.tableId) return false;
-        return reservationTime != null ? reservationTime.equals(that.reservationTime) : that.reservationTime == null;
+        if (startTime != null ? !startTime.equals(that.startTime) : that.startTime != null) return false;
+        return endTime != null ? endTime.equals(that.endTime) : that.endTime == null;
     }
 
     @Override
     public int hashCode() {
-        int result = customerId;
+        int result = id;
+        result = 31 * result + customerId;
         result = 31 * result + tableId;
-        result = 31 * result + (reservationTime != null ? reservationTime.hashCode() : 0);
+        result = 31 * result + (startTime != null ? startTime.hashCode() : 0);
+        result = 31 * result + (endTime != null ? endTime.hashCode() : 0);
         return result;
     }
 
@@ -76,7 +105,8 @@ public class Reservation {
                 "id=" + id +
                 ", customerId=" + customerId +
                 ", tableId=" + tableId +
-                ", reservationTime=" + reservationTime +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
                 '}';
     }
 }

@@ -7,5 +7,4 @@ public interface ReservationService {
 
     ReservationResponseDTO makeReservation(ReservationRequestDTO reservationRequestDTO);
 
-
 }

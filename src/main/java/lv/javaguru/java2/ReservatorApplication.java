@@ -1,9 +1,16 @@
 package lv.javaguru.java2;
 
+import lv.javaguru.java2.config.SpringAppConfig;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
 import java.util.Scanner;
 
 public class ReservatorApplication {
     public static void main(String[] args) {
+
+        ApplicationContext applicationContext
+                = new AnnotationConfigApplicationContext(SpringAppConfig.class);
 
 //        ReservationDatabase database = new ReservationInMemoryDatabase();
 //

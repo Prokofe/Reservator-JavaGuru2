@@ -7,7 +7,5 @@ public interface CustomerDAO {
 
     Customer save(Customer customer);
 
-    void remove(Customer customer);
-
     Customer findByPhoneNumber(String phoneNumber);
 }
