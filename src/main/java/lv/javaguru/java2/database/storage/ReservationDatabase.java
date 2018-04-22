@@ -1,6 +1,6 @@
-package lv.javaguru.java2.database;
+package lv.javaguru.java2.database.storage;
 
-import lv.javaguru.java2.Reservation;
+import lv.javaguru.java2.domain.Reservation;
 
 import java.util.List;
 import java.util.Optional;

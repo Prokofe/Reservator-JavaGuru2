@@ -1,12 +1,12 @@
-package lv.javaguru.java2.database;
+package lv.javaguru.java2.database.storage;
 
-import lv.javaguru.java2.Reservation;
+import lv.javaguru.java2.domain.Reservation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ReservationInMemoryDatabase implements  ReservationDatabase{
+public class ReservationInMemoryDatabase implements ReservationDatabase {
 
     private List<Reservation> reservations = new ArrayList<>();
 
@@ -19,7 +19,7 @@ public class ReservationInMemoryDatabase implements  ReservationDatabase{
     @Override
     public Optional<Reservation> findByPhoneNumber(String phoneNumber) {
         return reservations.stream()
-                .filter(p -> p.getPhoneNumber().equals(phoneNumber))
+                //.filter(p -> p.getPhoneNumber().equals(phoneNumber))
                 .findFirst();
     }
 
